@@ -13,4 +13,8 @@ namespace Drilld;
  */
 class Exception extends \Exception
 {
+    static public function wrap(\Exception $e)
+    {
+        return new self($e->getMessage(), $e->getCode(), $e->getPrevious());
+    }
 }
