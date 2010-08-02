@@ -19,6 +19,8 @@ class Mcrypt implements CryptInterface
 
     private $module = null;
 
+    private $iv = '';
+
     /**
      * Initializes the Mcrypt object.
      *
@@ -83,6 +85,29 @@ class Mcrypt implements CryptInterface
     }
 
     /**
+     * Returns most recently used initialization vector.
+     *
+     * @return string
+     */
+    public function getIv()
+    {
+        return $this->iv;
+    }
+
+    /**
+     * Sets a custom initialization vector (IV).
+     *
+     * Mostly used for decryption.
+     *
+     * @param string $iv
+     */
+    public function setIv($iv)
+    {
+        $this->iv = $iv;
+    }
+
+
+    /**
      * Encrypts the data with a given key.
      *
      * @param mixed $data arbitrary data to encrypt
@@ -91,18 +116,51 @@ class Mcrypt implements CryptInterface
      */
     public function encrypt($data, $key)
     {
-        // TODO
+        $betterKey = $this->convertKey($key);
+        $this->iv = \mcrypt_create_iv($this->getIvSize());
+        \mcrypt_generic_init($this->module, $betterKey, $this->iv);
+        $encryptedData = \mcrypt_generic($this->module, $data);
+        \mcrypt_generic_deinit($this->module);
+
+        return $encryptedData;
     }
 
     /**
      * Decrypts the data with a given key.
      *
+     * If the IV is not given, the method makes use of a most recently used
+     * one.
+     *
      * @param mixed $data arbitrary data to decrypt
      * @param string $key secret key used for decryption
+     * @param string $iv an optional initialization vector
      * @return decrypted data
      */
-    public function decrypt($data, $key)
+    public function decrypt($data, $key, $iv = null)
     {
-        // TODO
+        if (!is_null($iv))
+        {
+            $this->setIv($iv);
+        }
+
+        $betterKey = $this->convertKey($key);
+        \mcrypt_generic_init($this->module, $betterKey, $this->iv);
+        $decryptedData = \mdecrypt_generic($this->module, $data);
+        \mcrypt_generic_deinit($this->module);
+
+        return $decryptedData;
+    }
+
+    /**
+     * Converts the user-supplied key to a more strong one.
+     *
+     * @param string $key
+     * @return string
+     */
+    private function convertKey($key)
+    {
+        $keyObject = new \Drilld\Crypt\Key($key, $this->getKeySize());
+
+        return $keyObject->getKey();
     }
 }
