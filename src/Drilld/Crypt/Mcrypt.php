@@ -17,6 +17,8 @@ class Mcrypt implements CryptInterface
 
     private $mode = '';
 
+    private $module = null;
+
     /**
      * Initializes the Mcrypt object.
      *
@@ -29,8 +31,15 @@ class Mcrypt implements CryptInterface
     public function __construct($algorithm, $mode = 'cfb')
     {
         $this->algorithm = $algorithm;
-
         $this->mode = $mode;
+
+        $this->module = \mcrypt_module_open($this->algorithm, '',
+                                            $this->mode, '');
+    }
+
+    public function  __destruct()
+    {
+        \mcrypt_module_close($this->module);
     }
 
     /**
@@ -51,6 +60,26 @@ class Mcrypt implements CryptInterface
     public function getMode()
     {
         return $this->mode;
+    }
+
+    /**
+     * Returns the maximum supported key size for current algorithm and mode.
+     * 
+     * @return int
+     */
+    public function getKeySize()
+    {
+        return \mcrypt_enc_get_key_size($this->module);
+    }
+
+    /**
+     * Returns the IV size for current algorithm and mode.
+     *
+     * @return int
+     */
+    public function getIvSize()
+    {
+        return \mcrypt_enc_get_iv_size($this->module);
     }
 
     /**
