@@ -13,13 +13,15 @@ namespace Drilld\Random\Source;
  */
 class CapicomSource extends AbstractSource
 {
+    private $comObject = null;
+
     /**
-     * Returns $length bytes of random data.
+     * Creates the random data source.
      *
-     * @param int $length length of the requested random sequence in bytes
-     * @return string random binary data
+     * If the COM extension is not available and the COM class cannot
+     * be found, we throw an exception and finish our business.
      */
-    public function getData($length)
+    public function __construct()
     {
         // do not try to autoload here!
         if (class_exists('COM', false))
@@ -27,10 +29,7 @@ class CapicomSource extends AbstractSource
             try
             {
                 // Microsoft says this is now deprecated
-                $capicom = new \COM('CAPICOM.Utilities.1');
-                $bits = $capicom->GetRandom($length, 0);
-                // as $bits are binary data, PHP encodes it with base64
-                return \base64_decode($bits);
+                $this->comObject = new \COM('CAPICOM.Utilities.1');
             }
             catch (\Exception $e)
             {
@@ -39,7 +38,27 @@ class CapicomSource extends AbstractSource
         }
         else
         {
-            throw new \Drilld\Exception('COM not found');
+            throw new \Drilld\Exception('COM class not found');
+        }
+    }
+
+    /**
+     * Returns $length bytes of random data.
+     *
+     * @param int $length length of the requested random sequence in bytes
+     * @return string random binary data
+     */
+    public function getData($length)
+    {
+        try
+        {
+            $bits = $this->comObject->GetRandom($length, 0);
+            // as $bits are binary data, PHP encodes it with base64
+            return \base64_decode($bits);
+        }
+        catch (\Exception $e)
+        {
+            throw \Drilld\Exception::wrap($e);
         }
     }
 }
