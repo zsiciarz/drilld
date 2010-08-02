@@ -34,9 +34,7 @@ class Key
         // We have to calculate, how many raw outputs from hashing function
         // will fit into $length. Then we split the supplied string into
         // exactly $hashCount chunks.
-        // 20 is number of bytes returned by SHA-1 in raw form
-        // TODO: move the constant to Hash, as a method like Hash::getRawSize()
-        $hashSize = 20;
+        $hashSize = Hash\Hash::getHashSize($algorithm, true);
         $hashCount = \ceil($length / $hashSize);
         $chunkSize = \ceil(\strlen($humanKey) / $hashCount);
         $chunks = \str_split($humanKey, $chunkSize);

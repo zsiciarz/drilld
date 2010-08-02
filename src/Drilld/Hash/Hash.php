@@ -28,6 +28,22 @@ class Hash
     }
 
     /**
+     * Returns length of a hash calculated with given algorithm.
+     *
+     * If $raw is true, returns length of raw binary data in bytes. Otherwise
+     * the returned value is the number of characters in a hexadecimally encoded
+     * hash digest.
+     *
+     * @param string $algorithm
+     * @param bool $raw
+     * @return int
+     */
+    static public function getHashSize($algorithm, $raw = false)
+    {
+        return strlen(hash($algorithm, 'drilld', $raw));
+    }
+
+    /**
      * Creates a Hash object, using given algorithm.
      *
      * @param string $name algorithm name (eg. 'md5', 'whirlpool' etc.)
